@@ -72,6 +72,23 @@ typedef	rt_base_t												rt_off_t;
 #define		RT_EINTR			9		/* Interupt system call */
 #define		RT_EINVAL			10	/* Invalid argument */
 
+/*
+*************************************************
+*									 线程状态定义
+*************************************************
+*/
+#define RT_THREAD_INIT									0x00								/* 初始态 */
+#define	RT_THREAD_READY									0x01								/* 就绪态 */
+#define	RT_THREAD_SUSPEND								0x02								/* 挂起态 */
+#define	RT_THREAD_RUNNING								0x03								/* 运行态 */
+#define RT_THREAD_BLOCK									RT_THREAD_SUSPEND		/* 阻塞态 */
+#define	RT_THREAD_CLOSE									0x04								/* 关闭态 */
+#define	RT_THREAD_STAT_MASK							0x0f
+
+#define RT_THREAD_STAT_SIGNAL						0x10
+#define	RT_THREAD_STAT_SIGNAL_READY		(RT_THREAD_STAT_SIGNAL | RT_THREAD_READY)
+#define RT_THREAD_STAT_SIGNAL_SUSPEND		0x20
+#define RT_THREAD_STAT_SIGNAL_MASK			0xf0
 
 /*
 *************************************************
@@ -148,6 +165,13 @@ struct rt_thread
 	rt_uint32_t	stack_size;		/* thread's stack size(bytes) */
 	
 	rt_ubase_t	remaining_tick;					/* 用于实现阻塞延时 */
+	
+	rt_uint8_t	current_priority;				/* 当前优先级 */
+	rt_uint8_t	init_priority;					/* 初始优先级 */
+	rt_uint32_t	number_mask;						/* 当前优先级掩码 */
+	
+	rt_err_t		error;									/* 错误码 */
+	rt_uint8_t	stat;										/* 线程状态 */
 };
 typedef	struct	rt_thread *rt_thread_t;
 

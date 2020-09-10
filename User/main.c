@@ -5,6 +5,7 @@
 */
 
 #include <rtthread.h>
+#include <rthw.h>
 #include "ARMCM3.h"
 
 /*
@@ -53,11 +54,21 @@ int main(void)
 {
 	/* 硬件初始化 */
 	
+	/* 关中断 */
+	rt_hw_interrupt_disable();
+	
+	/* SysTick中断频率设置 */
+	SysTick_Config(SystemCoreClock / RT_TICK_PER_SECOND);
+	
 	/* 调度器初始化 */
 	rt_system_scheduler_init();
 	
+	/* 初始化空闲线程 */
+	rt_thread_idle_init();
+	
 	/* 初始化线程 */
 	rt_thread_init(	&rt_flag1_thread,
+									"rt_flag1_thread",
 									flag1_thread_entry,
 									RT_NULL,
 									&rt_flag1_thread_stack[0],
@@ -68,6 +79,7 @@ int main(void)
 	
 	/* 初始化线程 */
 	rt_thread_init(	&rt_flag2_thread,
+									"rt_flag2_thread",
 									flag2_thread_entry,
 									RT_NULL,
 									&rt_flag2_thread_stack[0],
@@ -91,6 +103,7 @@ void flag1_thread_entry(void *p_arg)
 {
 	for( ; ; )
 	{
+#if 0
 		flag1 = 1;
 		delay(100);
 		flag1 = 0;
@@ -98,6 +111,12 @@ void flag1_thread_entry(void *p_arg)
 		
 		/* 线程切换，这里是手动切换 */
 		rt_schedule();
+#else
+		flag1 = 1;
+		rt_thread_delay(2);
+		flag1 = 0;
+		rt_thread_delay(2);
+#endif
 	}
 }
 
@@ -106,6 +125,7 @@ void flag2_thread_entry(void *p_arg)
 {
 	for( ; ; )
 	{
+#if 0
 		flag2 = 1;
 		delay(100);
 		flag2 = 0;
@@ -113,5 +133,23 @@ void flag2_thread_entry(void *p_arg)
 		
 		/* 线程切换，这里是手动切换 */
 		rt_schedule();
+#else
+		flag2 = 1;
+		rt_thread_delay(2);
+		flag2 = 0;
+		rt_thread_delay(2);
+#endif
 	}
+}
+
+void SysTick_Handler(void)
+{
+	/* 进入中断 */
+	rt_interrupt_enter();
+	
+	/* 时基更新 */
+	rt_tick_increase();
+	
+	/* 离开中断 */
+	rt_interrupt_leave();
 }

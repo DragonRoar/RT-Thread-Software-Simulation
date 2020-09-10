@@ -1,6 +1,8 @@
 #ifndef __RT_DEF_H__
 #define __RT_DEF_H__
 
+#include <rtconfig.h>
+
 /*
 *************************************************
 *									数据类型
@@ -85,18 +87,67 @@ typedef	struct	rt_list_node rt_list_t;
 
 /*
 *************************************************
+*                  内核对象结构体
+*************************************************
+*/
+/* 内核对象基础数据结构 */
+struct rt_object
+{
+	char 			 name[RT_NAME_MAX];					/* 对象的名字 */
+	rt_uint8_t type;											/* 对象的类型 */
+	rt_uint8_t flag;											/* 对象的状态 */
+	
+	rt_list_t  list;											/* 对象的列表节点 */
+};
+typedef struct rt_object *rt_object_t;
+
+enum rt_object_class_type
+{
+	RT_Object_Class_Thread = 0,						/* 对象是线程 */
+	RT_Object_Class_Semaphore,						/* 对象是信号量 */
+	RT_Object_Class_Mutex,								/* 对象是互斥量 */
+	RT_Object_Class_Event,								/* 对象是事件 */
+	RT_Object_Class_MailBox,							/* 对象是邮箱 */
+	RT_Object_Class_MessageQueue,					/* 对象是消息队列 */
+	RT_Object_Class_MemHeap,							/* 对象是内存堆 */
+	RT_Object_Class_MemPool,							/* 对象是内存池 */
+	RT_Object_Class_Device,								/* 对象是设备 */
+	RT_Object_Class_Timer,								/* 对象是定时器 */
+	RT_Object_Class_Module,								/* 对象是模块 */
+	RT_Object_Class_Unknown,							/* 对象未知 */
+	RT_Object_Class_Static = 0x80					/* 对象是静态对象 */
+};
+
+/* 对象信息结构体 */
+struct rt_object_information 
+{
+	enum rt_object_class_type type;						/* 对象类型 */
+	rt_list_t									object_list;		/* 对象列表节点头 */
+	rt_size_t									object_size;		/* 对象大小 */
+};
+
+/*
+*************************************************
 *										线程结构体
 *************************************************
 */
 struct rt_thread
 {
+	/* rt 对象 */
+  char        name[RT_NAME_MAX];    /* 对象的名字 */
+  rt_uint8_t  type;                 /* 对象类型 */
+  rt_uint8_t  flags;                /* 对象的状态 */
+  rt_list_t   list;                 /* 对象的列表节点 */
+	
+	rt_list_t		tlist;				/* thread list node */
+	
 	void 				*sp;					/* thread's stack pointer */
 	void 				*entry;				/* thread's address of entry function */
 	void 				*parameter;		/* thread's formal parameters */
 	void 				*stack_addr;	/* thread's stack start address */
 	rt_uint32_t	stack_size;		/* thread's stack size(bytes) */
 	
-	rt_list_t		tlist;				/* thread list node */
+	rt_ubase_t	remaining_tick;					/* 用于实现阻塞延时 */
 };
 typedef	struct	rt_thread *rt_thread_t;
 

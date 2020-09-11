@@ -139,16 +139,12 @@ static struct rt_object_information rt_object_container[RT_Object_Info_Unknown] 
 #endif
 };
 	
-struct rt_object_information *
-	rt_object_get_information(enum rt_object_class_type type)
+struct rt_object_information *rt_object_get_information(enum rt_object_class_type type)
 {
 	int index;
 	
-	for(index = 0; index < RT_Object_Info_Unknown; index++){
-		if(rt_object_container[index].type == type){
-			return &rt_object_container[index];
-		}
-	}
+	for(index = 0; index < RT_Object_Info_Unknown; index++)
+		if(rt_object_container[index].type == type)	return &rt_object_container[index];
 	
 	return RT_NULL;
 }

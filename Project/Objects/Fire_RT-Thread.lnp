@@ -9,6 +9,7 @@
 ".\objects\idle.o"
 ".\objects\irq.o"
 ".\objects\clock.o"
+".\objects\timer.o"
 ".\objects\startup_armcm3.o"
 ".\objects\system_armcm3.o"
 --strict --scatter ".\Objects\Fire_RT-Thread.sct"

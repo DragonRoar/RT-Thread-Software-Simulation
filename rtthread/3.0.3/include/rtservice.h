@@ -50,6 +50,7 @@ rt_inline void rt_list_remove(rt_list_t *n)
 	n->next = n->prev = n;
 }
 
+/* 判断列表是否为空 */
 rt_inline int rt_list_isempty(const rt_list_t *l)
 {
     return l->next == l;

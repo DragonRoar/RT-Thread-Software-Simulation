@@ -31,8 +31,9 @@ void rt_thread_idle_init(void)
 								RT_NULL,
 								&rt_thread_stack[0],
 								sizeof(rt_thread_stack),
-								RT_THREAD_PRIORITY_MAX-1);
-	/* 将线程插入到就绪列表 */
-	//rt_list_insert_before(&(rt_thread_priority_table[RT_THREAD_PRIORITY_MAX]),&(idle.tlist));
+								RT_THREAD_PRIORITY_MAX-1,
+								2);
+								
+	/* 启动空闲线程 */
 	rt_thread_startup(&idle);
 }

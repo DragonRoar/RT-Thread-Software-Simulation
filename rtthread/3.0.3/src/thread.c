@@ -3,6 +3,7 @@
 
 extern struct rt_thread *rt_current_thread;
 extern rt_uint32_t	rt_thread_ready_priority_group;
+extern rt_list_t	rt_thread_priority_table[RT_THREAD_PRIORITY_MAX];
 
 rt_err_t rt_thread_init(struct	rt_thread *thread,
 												const char				*name,
@@ -10,7 +11,8 @@ rt_err_t rt_thread_init(struct	rt_thread *thread,
 												void 							*parameter,
 												void							*stack_start,
 												rt_uint32_t				stack_size,
-												rt_uint8_t				priority)
+												rt_uint8_t				priority,
+												rt_uint32_t				tick)
 {
 	/* 线程对象初始化 */
 	/* 线程结构体开头部分的4个成员就是 rt_object_t 成员 */
@@ -37,6 +39,10 @@ rt_err_t rt_thread_init(struct	rt_thread *thread,
 	thread->error = RT_EOK;
 	thread->stat = RT_THREAD_INIT;
 	
+	/* 时间片相关 */
+	thread->init_tick = tick;
+	thread->remaining_tick = tick;
+	
 	/* 初始化线程定时器 */
 	rt_timer_init(&(thread->thread_timer),							/* 静态定时器对象 */
 								thread->name,													/* 定时器名字，直接使用线程名字 */
@@ -44,6 +50,43 @@ rt_err_t rt_thread_init(struct	rt_thread *thread,
 								thread,																/* 超时函数形参 */
 								0,																		/* 延时时间 */
 								RT_TIMER_FLAG_ONE_SHOT);							/* 定时器标志 */
+	
+	return RT_EOK;
+}
+
+/* 让出处理器 */
+rt_err_t rt_thread_yield(void)
+{
+	register rt_base_t level;
+	struct rt_thread *thread;
+	
+	/* 关中断 */
+	level = rt_hw_interrupt_disable();
+	
+	/* 获取当前线程的线程控制块 */
+	thread = rt_current_thread;
+	
+	/* 如果线程在就绪状态，且同一个优先级下不止一个线程 */
+	if((thread->stat & RT_THREAD_STAT_MASK) == RT_THREAD_READY && 
+				thread->tlist.next != thread->tlist.prev)
+	{
+		/* 将时间片耗完的线程从就绪列表移除 */
+		rt_list_remove(&(thread->tlist));
+		
+		/* 将线程插入到该优先级下的链表尾部 */
+		rt_list_insert_before(&(rt_thread_priority_table[thread->current_priority]), &(thread->tlist));
+		
+		/* 开中断 */
+		rt_hw_interrupt_enable(level);
+		
+		/* 执行调度 */
+		rt_schedule();
+		
+		return RT_EOK;
+	}
+	
+	/* 开中断 */
+	rt_hw_interrupt_enable(level);
 	
 	return RT_EOK;
 }

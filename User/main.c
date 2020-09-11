@@ -80,7 +80,8 @@ int main(void)
 									RT_NULL,
 									&rt_flag1_thread_stack[0],
 									sizeof(rt_flag1_thread_stack),
-									2);
+									2,																	/* 优先级 */
+									4);																	/* 时间片 */
 	
 	/* 将线程插入到就绪列表 */
 	rt_thread_startup(&rt_flag1_thread);
@@ -92,7 +93,8 @@ int main(void)
 									RT_NULL,
 									&rt_flag2_thread_stack[0],
 									sizeof(rt_flag2_thread_stack),
-									3);
+									3,																	/* 优先级 */
+									2);																	/* 时间片 */
 	
 	/* 将线程插入到就绪列表 */
 	rt_thread_startup(&rt_flag2_thread);
@@ -104,7 +106,8 @@ int main(void)
 									RT_NULL,
 									&rt_flag3_thread_stack[0],
 									sizeof(rt_flag3_thread_stack),
-									4);
+									3,																	/* 优先级 */
+									3);																	/* 时间片 */
 	
 	/* 将线程插入到就绪列表 */
 	rt_thread_startup(&rt_flag3_thread);								
@@ -137,9 +140,11 @@ void flag2_thread_entry(void *p_arg)
 	for( ; ; )
 	{
 		flag2 = 1;
-		rt_thread_delay(2);
+//		rt_thread_delay(2);
+		delay(100);
 		flag2 = 0;
-		rt_thread_delay(2);
+//		rt_thread_delay(2);
+		delay(100);
 	}
 }
 
@@ -149,9 +154,11 @@ void flag3_thread_entry(void *p_arg)
 	for( ; ; )
 	{
 		flag3 = 1;
-		rt_thread_delay(3);
+//		rt_thread_delay(3);
+		delay(100);
 		flag3 = 0;
-		rt_thread_delay(3);
+//		rt_thread_delay(3);
+		delay(100);
 	}
 }
 
